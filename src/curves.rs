@@ -221,6 +221,23 @@ macro_rules! new_curve_impl {
 
                 $name_affine::conditional_select(&tmp, &$name_affine::identity(), zinv.is_zero())
             }
+
+            // SuperScalar
+            fn to_affine_gpu(&self) -> Self::AffineRepr {
+                let zinv = self.z.invert().unwrap_or($base::zero());
+                let zinv2 = zinv.square();
+                let x = self.x * zinv2;
+                let zinv3 = zinv2 * zinv;
+                let y = self.y * zinv3;
+
+                let tmp = $name_affine {
+                    x,
+                    y,
+                };
+
+                $name_affine::conditional_select(&tmp, &$name_affine::identity(), zinv.is_zero())
+            }
+
         }
 
         impl PrimeGroup for $name {}
